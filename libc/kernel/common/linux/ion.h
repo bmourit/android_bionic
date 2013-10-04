@@ -18,11 +18,6 @@
  ****************************************************************************/
 #ifndef _LINUX_ION_H
 #define _LINUX_ION_H
-
-#ifdef ACT_HARDWARE
-#include <linux/ioctl.h>
-#endif
-
 #include <linux/types.h>
 struct ion_handle;
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
@@ -41,165 +36,6 @@ enum ion_heap_type {
 #define ION_FLAG_CACHED 1
 #define ION_FLAG_CACHED_NEEDS_SYNC 2
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-
-#ifdef ACT_HARDWARE
-#define ION_IS_CACHED(__flags)	((__flags) & ION_FLAG_CACHED)
-
-#ifdef __KERNEL__
-struct ion_device;
-struct ion_heap;
-struct ion_mapper;
-struct ion_client;
-struct ion_buffer;
-
-
-#define ion_phys_addr_t unsigned long
-
-struct ion_platform_heap {
-	enum ion_heap_type type;
-	unsigned int id;
-	const char *name;
-	ion_phys_addr_t base;
-	size_t size;
-	unsigned int has_outer_cache;
-};
-
-struct ion_platform_data {
-	int nr;
-	struct ion_platform_heap heaps[];
-};
-
-void ion_reserve(struct ion_platform_data *data);
-
-struct ion_client *ion_client_create(struct ion_device *dev,
-				     const char *name);
-
-/**
- * ion_client_destroy() -  free's a client and all it's handles
- * @client:	the client
- *
- * Free the provided client and all it's resources including
- * any handles it is holding.
- */
-void ion_client_destroy(struct ion_client *client);
-
-/**
- * ion_alloc - allocate ion memory
- * @client:		the client
- * @len:		size of the allocation
- * @align:		requested allocation alignment, lots of hardware blocks
- *			have alignment requirements of some kind
- * @heap_id_mask:	mask of heaps to allocate from, if multiple bits are set
- *			heaps will be tried in order from highest to lowest
- *			id
- * @flags:		heap flags, the low 16 bits are consumed by ion, the
- *			high 16 bits are passed on to the respective heap and
- *			can be heap custom
- *
- * Allocate memory in one of the heaps provided in heap mask and return
- * an opaque handle to it.
- */
-struct ion_handle *ion_alloc(struct ion_client *client, size_t len,
-			     size_t align, unsigned int heap_id_mask,
-			     unsigned int flags);
-
-/**
- * ion_free - free a handle
- * @client:	the client
- * @handle:	the handle to free
- *
- * Free the provided handle.
- */
-void ion_free(struct ion_client *client, struct ion_handle *handle);
-
-/**
- * ion_phys - returns the physical address and len of a handle
- * @client:	the client
- * @handle:	the handle
- * @addr:	a pointer to put the address in
- * @len:	a pointer to put the length in
- *
- * This function queries the heap for a particular handle to get the
- * handle's physical address.  It't output is only correct if
- * a heap returns physically contiguous memory -- in other cases
- * this api should not be implemented -- ion_sg_table should be used
- * instead.  Returns -EINVAL if the handle is invalid.  This has
- * no implications on the reference counting of the handle --
- * the returned value may not be valid if the caller is not
- * holding a reference.
- */
-int ion_phys(struct ion_client *client, struct ion_handle *handle,
-	     ion_phys_addr_t *addr, size_t *len);
-
-/**
- * ion_map_dma - return an sg_table describing a handle
- * @client:	the client
- * @handle:	the handle
- *
- * This function returns the sg_table describing
- * a particular ion handle.
- */
-struct sg_table *ion_sg_table(struct ion_client *client,
-			      struct ion_handle *handle);
-
-/**
- * ion_map_kernel - create mapping for the given handle
- * @client:	the client
- * @handle:	handle to map
- *
- * Map the given handle into the kernel and return a kernel address that
- * can be used to access this address.
- */
-void *ion_map_kernel(struct ion_client *client, struct ion_handle *handle);
-
-/**
- * ion_unmap_kernel() - destroy a kernel mapping for a handle
- * @client:	the client
- * @handle:	handle to unmap
- */
-void ion_unmap_kernel(struct ion_client *client, struct ion_handle *handle);
-
-/**
- * ion_share_dma_buf() - given an ion client, create a dma-buf fd
- * @client:	the client
- * @handle:	the handle
- */
-int ion_share_dma_buf(struct ion_client *client, struct ion_handle *handle);
-
-/**
- * ion_import_dma_buf() - given an dma-buf fd from the ion exporter get handle
- * @client:	the client
- * @fd:		the dma-buf fd
- *
- * Given an dma-buf fd that was allocated through ion via ion_share_dma_buf,
- * import that fd and return a handle representing it.  If a dma-buf from
- * another exporter is passed in this function will return ERR_PTR(-EINVAL)
- */
-struct ion_handle *ion_import_dma_buf(struct ion_client *client, int fd);
-
-#endif /* __KERNEL__ */
-
-/**
- * DOC: Ion Userspace API
- *
- * create a client by opening /dev/ion
- * most operations handled via following ioctls
- *
- */
-
-/**
- * struct ion_allocation_data - metadata passed from userspace for allocations
- * @len:		size of the allocation
- * @align:		required alignment of the allocation
- * @heap_id_mask:	mask of heap ids to allocate from
- * @flags:		flags passed to heap
- * @handle:		pointer that will be populated with a cookie to use to
- *			refer to this allocation
- *
- * Provided by userspace as an argument to the ioctl
- */
-#endif
-
 struct ion_allocation_data {
  size_t len;
  size_t align;
@@ -222,22 +58,6 @@ struct ion_custom_data {
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
  unsigned long arg;
 };
-
-#ifdef ACT_HARDWARE
-struct ion_flush_data {
-	struct ion_handle *handle;
-	int fd;
-	void *vaddr;
-	unsigned int offset;
-	unsigned int length;
-};
-
-struct ion_flag_data {
-	struct ion_handle *handle;
-	unsigned long flags;
-};
-#endif
-
 #define ION_IOC_MAGIC 'I'
 #define ION_IOC_ALLOC _IOWR(ION_IOC_MAGIC, 0,   struct ion_allocation_data)
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
@@ -248,29 +68,4 @@ struct ion_flag_data {
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
 #define ION_IOC_SYNC _IOWR(ION_IOC_MAGIC, 7, struct ion_fd_data)
 #define ION_IOC_CUSTOM _IOWR(ION_IOC_MAGIC, 6, struct ion_custom_data)
-
-#ifdef ACT_HARDWARE
-/**
- * DOC: ION_IOC_CLEAN_CACHES - clean the caches
- *
- * Clean the caches of the handle specified.
- */
-#define ION_IOC_CLEAN_CACHES	_IOWR(ION_IOC_MAGIC, 20, \
-						struct ion_flush_data)
-/**
- * DOC: ION_MSM_IOC_INV_CACHES - invalidate the caches
- *
- * Invalidate the caches of the handle specified.
- */
-#define ION_IOC_INV_CACHES	_IOWR(ION_IOC_MAGIC, 21, \
-						struct ion_flush_data)
-/**
- * DOC: ION_MSM_IOC_CLEAN_CACHES - clean and invalidate the caches
- *
- * Clean and invalidate the caches of the handle specified.
- */
-#define ION_IOC_CLEAN_INV_CACHES	_IOWR(ION_IOC_MAGIC, 22, \
-						struct ion_flush_data)
-#endif
-
 #endif
