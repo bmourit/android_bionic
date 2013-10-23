@@ -385,8 +385,7 @@ libc_common_src_files += \
 libc_static_common_src_files += \
     bionic/pthread.c.arm \
     bionic/pthread_create.cpp.arm \
-    bionic/pthread_key.cpp.arm \
-
+    bionic/pthread_key.cpp.arm
 endif # arm
 
 ifeq ($(TARGET_ARCH),x86)

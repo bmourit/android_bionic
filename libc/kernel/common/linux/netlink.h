@@ -18,7 +18,7 @@
  ****************************************************************************/
 #ifndef __LINUX_NETLINK_H
 #define __LINUX_NETLINK_H
-#include <linux/socket.h>
+#include <sys/socket.h>  
 #include <linux/types.h>
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
 #define NETLINK_ROUTE 0
