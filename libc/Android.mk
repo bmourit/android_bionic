@@ -368,8 +368,8 @@ libc_common_src_files += \
 	string/strncat.c \
 	string/strncpy.c \
 	bionic/strchr.cpp \
-	string/strrchr.c \
 	bionic/memchr.c \
+	string/strrchr.c \
 	bionic/memrchr.c \
 	string/index.c \
 	bionic/strnlen.c \
@@ -514,6 +514,14 @@ ifeq ($(TARGET_ARCH),arm)
   libc_common_cflags += -DSOFTFLOAT
   libc_common_cflags += -fstrict-aliasing
   libc_crt_target_cflags := -mthumb-interwork
+  #
+  # Define HAVE_32_BYTE_CACHE_LINES to indicate to C
+  # library it should use to 32-byte version of memcpy, and not
+  # the 64-byte version.
+  #
+  ifeq ($(ARCH_ARM_HAVE_32_BYTE_CACHE_LINES),true)
+    libc_common_cflags += -DHAVE_32_BYTE_CACHE_LINE
+  endif
 endif # !arm
 
 ifeq ($(TARGET_ARCH),x86)
@@ -576,6 +584,9 @@ libc_crt_target_cflags += \
 # static C++ destructors are properly called on dlclose().
 #
 ifeq ($(TARGET_ARCH),arm)
+#for actions
+    libc_crtbegin_extension := c
+#end actions
     libc_crt_target_so_cflags :=
 endif
 ifeq ($(TARGET_ARCH),mips)
@@ -585,8 +596,14 @@ ifeq ($(TARGET_ARCH),x86)
     libc_crt_target_so_cflags := -fPIC
 endif
 libc_crt_target_so_cflags += $(libc_crt_target_cflags)
+
+ifdef ($(TARGET_BOARD_PLATFORM),ATM702X)
+libc_crt_target_crtbegin_file := $(LOCAL_PATH)/arch-$(TARGET_ARCH)/bionic/crtbegin.$(libc_crtbegin_extension)
+libc_crt_target_crtbegin_so_file := $(LOCAL_PATH)/arch-$(TARGET_ARCH)/bionic/crtbegin_so.$(libc_crtbegin_extension)
+else
 libc_crt_target_crtbegin_file := $(LOCAL_PATH)/arch-$(TARGET_ARCH)/bionic/crtbegin.c
 libc_crt_target_crtbegin_so_file := $(LOCAL_PATH)/arch-$(TARGET_ARCH)/bionic/crtbegin_so.c
+endif
 
 # See the comment in crtbrand.c for the reason why we need to generate
 # crtbrand.s before generating crtbrand.o.

@@ -31,6 +31,12 @@ enum {
 	ASOC_ION_GET_PHY = 0,
 };
 
+/* List of heaps in the system. */
+enum {
+	ASOC_ION_HEAP_CARVEOUT = 0,
+	ASOC_ION_HEAP_CMA= 1,
+};
+
 /**
  * These are the only ids that should be used for Ion heap ids.
  * The ids listed are the order in which allocation will be attempted

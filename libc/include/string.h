@@ -89,6 +89,7 @@ extern size_t strxfrm(char* __restrict, const char* __restrict, size_t);
 
 __errordecl(__memcpy_dest_size_error, "memcpy called with size bigger than destination");
 __errordecl(__memcpy_src_size_error, "memcpy called with size bigger than source");
+__errordecl(__memcpy_overlap_error, "memcpy called with overlapping regions");
 
 __BIONIC_FORTIFY_INLINE
 void* memcpy(void* __restrict dest, const void* __restrict src, size_t copy_amount) {
@@ -103,6 +104,11 @@ void* memcpy(void* __restrict dest, const void* __restrict src, size_t copy_amou
 
     if (__builtin_constant_p(copy_amount) && (copy_amount > s_len)) {
         __memcpy_src_size_error();
+    }
+
+    if (__builtin_constant_p(d - s) && __builtin_constant_p(copy_amount)
+            && (((size_t)(d - s) < copy_amount) || ((size_t)(s - d) < copy_amount))) {
+        __memcpy_overlap_error();
     }
 
     return __builtin___memcpy_chk(dest, src, copy_amount, d_len);
